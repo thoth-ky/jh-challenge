@@ -51,6 +51,7 @@ class Message:
     }
 
 def destructure (dictionary, *keys):
+  # select specific keys from a dictionary
   return [ dictionary[key] if key in dictionary else None for key in keys ]
 
 def load_json_file(path_to_json):
@@ -62,6 +63,7 @@ def load_json_file(path_to_json):
         message, 'ticket_id', 'user_id', 'created_at'
         )
       result.append(Message(ticket_number, user_id, entry_datetime))
+  # sort by date to arrange messages in order
   sorted_result = sorted(result, key=lambda k: k.entry_datetime)
   return sorted_result
 
@@ -91,15 +93,18 @@ def fix_time_delta(conversations):
     start_time = None
 
     for message in messages:
+      # if it is the first inbound
       if (message.entry_direction == 'in') and not set_in:
         logging.debug('START TIMER')
         start_time = message.entry_datetime
         set_in = True
+      # if outbound after series of inbound
       elif message.entry_direction == 'out' and set_in:
         message.timedelta_hours = convert_timedelta_to_hours(message.entry_datetime-start_time)
         start_time = None
         set_in = False
         logging.debug('RESET TIMER')
+
     final_data.extend(messages)
   return final_data
 
